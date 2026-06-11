@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ทุเรียนลุงทิม | ลงทะเบียนจองทุเรียน</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <!-- ===================== TOP BAR ===================== -->
+      <header class="topbar">
+        <button class="menu-toggle" id="menuToggle" type="button" aria-label="เมนู">☰</button>
+        <a class="brand" href="#" aria-label="ทุเรียนลุงทิม">
+          <img class="brand-mark" src="assets/logo.svg" alt="โลโก้ทุเรียนลุงทิม" />
+          <span class="brand-name">ทุเรียนลุงทิม</span>
+        </a>
+        <div class="topbar-actions">
+          <span class="login-state" id="loginState">ยังไม่ได้ลงทะเบียน</span>
+          <button class="ghost-button is-hidden" id="logoutButton" type="button">ออกจากระบบ</button>
+        </div>
+      </header>
+
+      <div class="main-layout">
+        <!-- ===================== SIDEBAR ===================== -->
+        <aside class="side-panel" id="sidePanel" aria-label="เมนูหลัก">
+          <nav class="side-nav">
+            <button class="side-item is-active" type="button" data-view="home">
+              <span class="side-ico" aria-hidden="true">⌂</span>
+              <span>หน้าหลัก</span>
+            </button>
+            <button class="side-item" type="button" data-view="booking" data-needs-login="true">
+              <span class="side-ico" aria-hidden="true">▣</span>
+              <span>จองทุเรียน</span>
+            </button>
+            <button class="side-item" type="button" data-view="history" data-needs-login="true">
+              <span class="side-ico" aria-hidden="true">☑</span>
+              <span>รายการของฉัน</span>
+              <span class="side-badge is-hidden" id="historyBadge">0</span>
+            </button>
+            <button class="side-item admin-nav is-hidden" type="button" data-view="admin" data-needs-login="true" id="adminNav">
+              <span class="side-ico" aria-hidden="true">★</span>
+              <span>ออเดอร์ทั้งหมด</span>
+            </button>
+          </nav>
+          <div class="side-foot">
+            <p class="side-foot-title">ติดต่อสวน</p>
+            <p>โทร. 096-2414622, 095-2246923</p>
+            <p>LINE: 0962414622</p>
+          </div>
+        </aside>
+        <div class="side-scrim" id="sideScrim" hidden></div>
+
+        <!-- ===================== CONTENT ===================== -->
+        <main class="content" id="content">
+          <!-- ---------- VIEW: HOME ---------- -->
+          <section class="view is-active" id="view-home">
+            <div class="hero">
+              <div class="hero-media" role="img" aria-label="ภาพทุเรียนสดจากสวน"></div>
+              <div class="hero-overlay">
+                <div class="hero-text">
+                  <span class="eyebrow">สวนทุเรียนลุงทิม</span>
+                  <h1>จองทุเรียน<br />ตรงจากสวน</h1>
+                  <p>ลงทะเบียนด้วยชื่อและเบอร์มือถือ แล้วเริ่มจองได้ทันที เลือกจำนวนลูกและกรอกที่อยู่จัดส่งให้ครบ</p>
+                  <p class="hero-price" id="heroPrice">🏷️ ราคา กิโลกรัมละ <span class="price-value">100</span> บาท · ค่าส่งคิดตามจริง</p>
+                </div>
+
+                <!-- การ์ดลงทะเบียน (แสดงเมื่อยังไม่ได้ login) -->
+                <div class="panel-card" id="registerCard">
+                  <h2>ลงทะเบียน / เข้าใช้งาน</h2>
+                  <p class="card-sub">กรอกชื่อและเบอร์มือถือเพื่อเริ่มจอง</p>
+                  <form id="registerForm" novalidate>
+                    <div class="field">
+                      <label for="regName">ชื่อ-สกุล</label>
+                      <input id="regName" name="regName" type="text" autocomplete="name" placeholder="เช่น ลุงทิม ทุเรียนแซบ" required />
+                    </div>
+                    <div class="field">
+                      <label for="regPhone">เบอร์มือถือ</label>
+                      <input id="regPhone" name="regPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="08xxxxxxxx" required />
+                      <p class="err is-hidden" id="regPhoneErr">กรุณากรอกเบอร์มือถือ 10 หลัก (ขึ้นต้น 06/08/09)</p>
+                    </div>
+                    <button class="primary-button block" type="submit">เริ่มใช้งาน</button>
+                  </form>
+                </div>
+
+                <!-- การ์ดต้อนรับ (แสดงเมื่อ login แล้ว) -->
+                <div class="panel-card is-hidden" id="welcomeCard">
+                  <p class="status-label">ยินดีต้อนรับ</p>
+                  <h2 id="welcomeName">คุณลูกค้า</h2>
+                  <p class="card-sub" id="welcomePhone">—</p>
+                  <button class="primary-button block" id="goBookingButton" type="button">+ จองทุเรียนเลย</button>
+                  <button class="secondary-button block" id="goHistoryButton" type="button">ดูรายการของฉัน</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ---------- VIEW: BOOKING ---------- -->
+          <section class="view" id="view-booking" hidden>
+            <div class="view-head">
+              <h1>จองทุเรียน</h1>
+              <p>กรอกจำนวนและรายละเอียดจัดส่งให้ครบถ้วน</p>
+              <p class="price-tag" id="bookingPrice">🏷️ ราคา กิโลกรัมละ <span class="price-value">100</span> บาท · ค่าส่งคิดตามจริง</p>
+            </div>
+
+            <form class="form-card" id="bookingForm" novalidate>
+              <!-- รอบตัด/จัดส่ง -->
+              <fieldset class="method-group round-group">
+                <legend>📦 กำหนดตัด/จัดส่ง</legend>
+                <label class="method-option">
+                  <input type="radio" name="round" value="รอบที่ 1 : 8 มิถุนายน 2569" checked />
+                  <span class="method-ico" aria-hidden="true">①</span>
+                  <span>รอบที่ 1 · 8 มิ.ย. 2569</span>
+                </label>
+                <label class="method-option">
+                  <input type="radio" name="round" value="รอบที่ 2 : ประมาณ 6 กรกฎาคม 2569" />
+                  <span class="method-ico" aria-hidden="true">②</span>
+                  <span>รอบที่ 2 · ประมาณ 6 ก.ค. 2569</span>
+                </label>
+                <p class="round-lock-note is-hidden" id="roundLockNote">🔒 แก้ไขรอบจัดส่งไม่ได้ (ล็อกตามที่จองไว้)</p>
+              </fieldset>
+
+              <!-- จำนวน -->
+              <div class="field">
+                <label for="quantity">จำนวน (ลูก)</label>
+                <div class="stepper">
+                  <button type="button" id="decBtn" aria-label="ลดจำนวน">−</button>
+                  <input id="quantity" name="quantity" type="number" min="1" max="99" value="1" inputmode="numeric" required />
+                  <button type="button" id="incBtn" aria-label="เพิ่มจำนวน">+</button>
+                </div>
+              </div>
+
+              <!-- วิธีรับสินค้า -->
+              <fieldset class="method-group">
+                <legend>วิธีรับสินค้า</legend>
+                <label class="method-option">
+                  <input type="radio" name="method" value="จัดส่ง" checked />
+                  <span class="method-ico" aria-hidden="true">🚚</span>
+                  <span>จัดส่งถึงบ้าน</span>
+                </label>
+                <label class="method-option">
+                  <input type="radio" name="method" value="รับที่โรงงาน" />
+                  <span class="method-ico" aria-hidden="true">🏭</span>
+                  <span>รับที่โรงงาน</span>
+                </label>
+              </fieldset>
+
+              <!-- รายละเอียดผู้รับ + ที่อยู่ -->
+              <div id="deliveryBlock">
+                <h3 class="block-title">รายละเอียดจัดส่ง</h3>
+
+                <div class="grid-2">
+                  <div class="field">
+                    <label for="recvName">ชื่อ-สกุลผู้รับ</label>
+                    <input id="recvName" name="recvName" type="text" autocomplete="name" required />
+                  </div>
+                  <div class="field">
+                    <label for="recvPhone">เบอร์โทรผู้รับ</label>
+                    <input id="recvPhone" name="recvPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel" required />
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="addrLine">ที่อยู่ (บ้านเลขที่ / หมู่ / ซอย / ถนน)</label>
+                  <textarea id="addrLine" name="addrLine" rows="2" placeholder="เช่น 99/1 หมู่ 4 ถนนสุขใจ" required></textarea>
+                </div>
+
+                <div class="grid-2">
+                  <div class="field">
+                    <label for="tambon">ตำบล / แขวง</label>
+                    <input id="tambon" name="tambon" type="text" required />
+                  </div>
+                  <div class="field">
+                    <label for="amphoe">อำเภอ / เขต</label>
+                    <input id="amphoe" name="amphoe" type="text" required />
+                  </div>
+                </div>
+
+                <div class="grid-2">
+                  <div class="field">
+                    <label for="province">จังหวัด</label>
+                    <input id="province" name="province" type="text" list="provinceList" required />
+                    <datalist id="provinceList"></datalist>
+                  </div>
+                  <div class="field">
+                    <label for="postcode">รหัสไปรษณีย์</label>
+                    <input id="postcode" name="postcode" type="text" inputmode="numeric" maxlength="5" placeholder="10110" required />
+                  </div>
+                </div>
+              </div>
+
+              <!-- หมายเหตุ -->
+              <div class="field">
+                <label for="note">หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+                <textarea id="note" name="note" rows="2" maxlength="200"></textarea>
+              </div>
+
+              <p class="form-err is-hidden" id="bookingErr">กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน</p>
+
+              <div class="form-actions">
+                <button class="secondary-button" type="button" id="cancelBooking">ยกเลิก</button>
+                <button class="primary-button" type="submit" id="bookingSubmitBtn">ยืนยันการจอง</button>
+              </div>
+            </form>
+          </section>
+
+          <!-- ---------- VIEW: HISTORY ---------- -->
+          <section class="view" id="view-history" hidden>
+            <div class="view-head">
+              <h1>รายการของฉัน</h1>
+              <p>รายการจองทั้งหมดที่บันทึกไว้ในเครื่องนี้</p>
+            </div>
+
+            <div class="history-toolbar">
+              <span id="historyCount" class="history-count">0 รายการ</span>
+            </div>
+
+            <div id="historyList" class="history-list"></div>
+
+            <div class="empty-state is-hidden" id="historyEmpty">
+              <div class="empty-ico" aria-hidden="true">🧺</div>
+              <p>ยังไม่มีรายการจอง</p>
+              <button class="primary-button" type="button" data-view="booking">จองทุเรียนเลย</button>
+            </div>
+          </section>
+
+          <!-- ---------- VIEW: ADMIN (ผู้ดูแลเท่านั้น) ---------- -->
+          <section class="view" id="view-admin" hidden>
+            <div class="view-head">
+              <h1>ออเดอร์ทั้งหมด <span class="admin-tag">ผู้ดูแล</span></h1>
+              <p>ดึงข้อมูลทุกออเดอร์จาก Google Sheet</p>
+            </div>
+            <div class="history-toolbar">
+              <span id="adminCount" class="history-count">—</span>
+              <button class="ghost-button" id="adminRefresh" type="button">↻ รีเฟรช</button>
+            </div>
+            <div id="adminList" class="history-list"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <!-- ===================== TOAST ===================== -->
+    <div class="toast is-hidden" id="toast" role="status" aria-live="polite">
+      <span class="toast-ico" aria-hidden="true">✓</span>
+      <span id="toastText">บันทึกการจองแล้ว</span>
+    </div>
+
+    <!-- ===================== ORDER SUCCESS MODAL ===================== -->
+    <div class="modal-backdrop is-hidden" id="successModal" role="dialog" aria-modal="true" aria-labelledby="successTitle">
+      <div class="modal-card">
+        <div class="success-ring" aria-hidden="true">✓</div>
+        <h2 id="successTitle">จองสำเร็จ!</h2>
+        <p class="card-sub">บันทึกรายการแล้ว ส่งรายละเอียดให้ทางสวนได้เลย</p>
+        <pre class="order-receipt" id="orderReceipt"></pre>
+        <div class="form-actions">
+          <button class="secondary-button" id="copyOrderButton" type="button">📋 คัดลอกรายละเอียด</button>
+          <button class="primary-button" id="successDone" type="button">เสร็จสิ้น</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
